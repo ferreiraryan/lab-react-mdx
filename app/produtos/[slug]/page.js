@@ -4,11 +4,15 @@ import EditorialContent from "@/components/EditorialContent";
 import { getContent, listContent } from "@/lib/content.mjs";
 
 export async function generateStaticParams() {
-  return (await listContent("produtos")).map(({ slug }) => ({ slug }));
+  const produtos = await listContent("produtos");
+  return produtos.map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = await params;
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
+  if (!slug) return { title: "Produto não encontrado" };
+
   const produto = await getContent("produtos", slug);
   return produto
     ? { title: produto.frontmatter.name, description: produto.frontmatter.description }
@@ -16,7 +20,10 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Page({ params }) {
-  const { slug } = await params;
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
+  if (!slug) notFound();
+
   const produto = await getContent("produtos", slug);
   if (!produto) notFound();
 
