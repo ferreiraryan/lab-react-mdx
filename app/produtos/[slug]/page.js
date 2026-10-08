@@ -23,15 +23,26 @@ export default async function Page({ params }) {
   const { name, category, description, image, alt } = produto.frontmatter;
 
   return (
-    <article>
-      <p className="eyebrow">{category}</p>
-      <h1>{name}</h1>
-      <p className="lead">{description}</p>
-      <img src={image} alt={alt} />
-      <EditorialContent source={produto.content} />
-      <p>
-        <Link href="/#produtos">← Voltar aos produtos</Link>
-      </p>
+    <article className="product-detail">
+      <div className="product-detail__media">
+        <img src={image} alt={alt} />
+      </div>
+
+      <div className="product-detail__content">
+        <header>
+          <p className="eyebrow">{category}</p>
+          <h1>{name}</h1>
+          <p className="lead">{description}</p>
+        </header>
+
+        <EditorialContent source={produto.content} />
+
+        <div className="product-detail__actions">
+          <Link href="/#produtos" className="btn btn--outline">
+            ← Voltar aos produtos
+          </Link>
+        </div>
+      </div>
     </article>
   );
 }
