@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import EditorialContent from "@/components/EditorialContent";
 import ProductCard from "@/components/ProductCard";
 import TeamMemberModal from "@/components/TeamMemberModal";
+import GlowEffect from "@/components/GlowEffect";
+import RevealOnScroll from "@/components/RevealOnScroll";
 import { getContent, listContent } from "@/lib/content.mjs";
 
 export default async function Home() {
@@ -89,89 +91,9 @@ export default async function Home() {
         )}
       </section>
 
-      {/* Script otimizado com Blur Reveal + Stagger Effect e Glow */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              if (window.__hexxed_effects) {
-                setTimeout(() => {
-                  if (window.__hexxed_observer) {
-                    document.querySelectorAll('[data-animate]:not(.is-visible)').forEach(el => window.__hexxed_observer.observe(el));
-                  }
-                }, 100);
-                return;
-              }
-              window.__hexxed_effects = true;
-
-              // Setup: Efeito Delay do Mouse (Lerp Glow)
-              let targetX = window.innerWidth / 2;
-              let targetY = window.innerHeight / 2;
-              let currentX = targetX;
-              let currentY = targetY;
-
-              window.addEventListener('mousemove', (e) => {
-                targetX = e.clientX;
-                targetY = e.clientY;
-              });
-
-              function animateGlow() {
-                currentX += (targetX - currentX) * 0.06;
-                currentY += (targetY - currentY) * 0.06;
-                
-                const glow = document.getElementById('glow-container');
-                if (glow) {
-                  glow.style.setProperty('--mouse-x', currentX + 'px');
-                  glow.style.setProperty('--mouse-y', currentY + 'px');
-                }
-                requestAnimationFrame(animateGlow);
-              }
-
-              // Setup: Intersection Observer com Cascata (Stagger)
-              let staggerIndex = 0;
-              let staggerTimer = null;
-
-              const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                  if (entry.isIntersecting) {
-                    if (entry.target.hasAttribute('data-stagger')) {
-                      entry.target.style.transitionDelay = (staggerIndex * 0.15) + 's';
-                      staggerIndex++;
-                      clearTimeout(staggerTimer);
-                      staggerTimer = setTimeout(() => { staggerIndex = 0; }, 100);
-                    }
-
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target);
-                  }
-                });
-              }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
-              
-              window.__hexxed_observer = observer;
-
-              function initEffects() {
-                animateGlow();
-                document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
-
-                const mutationObserver = new MutationObserver((mutations) => {
-                  mutations.forEach(mutation => {
-                    mutation.addedNodes.forEach(node => {
-                      if (node.nodeType === 1) {
-                        if (node.hasAttribute && node.hasAttribute('data-animate')) observer.observe(node);
-                        const children = node.querySelectorAll ? node.querySelectorAll('[data-animate]') : [];
-                        children.forEach(el => observer.observe(el));
-                      }
-                    });
-                  });
-                });
-                mutationObserver.observe(document.body, { childList: true, subtree: true });
-              }
-
-              setTimeout(initEffects, 150);
-            })();
-          `
-        }}
-      />
+      {/* Renderizamos os efeitos como Client Components perto do fechamento para espelhar a lógica de injeção anterior, garantindo boa organização lógica. */}
+      <GlowEffect />
+      <RevealOnScroll />
     </div>
   );
 }
