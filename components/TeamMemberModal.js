@@ -1,39 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { LazyMotion, m } from "motion/react";
+import { LazyMotion, m, useReducedMotion } from "motion/react";
 import TeamCard from "./TeamCard";
 
 const loadFeatures = () => import("motion/react").then((res) => res.domMax);
-
-// Curva de gravidade e giro: O card sobe, aproxima da câmera e gira suavemente.
-const flipperVariants = {
-  frente: {
-    rotateY: 0,
-    y: [0, -40, 0],
-    scale: [1, 1.08, 1],
-    transition: {
-      rotateY: { type: "spring", stiffness: 50, damping: 14 },
-      y: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] },
-      scale: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] }
-    }
-  },
-  verso: {
-    rotateY: 180,
-    y: [0, -40, 0],
-    scale: [1, 1.08, 1],
-    transition: {
-      rotateY: { type: "spring", stiffness: 50, damping: 14 },
-      y: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] },
-      scale: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] }
-    }
-  }
-};
 
 export default function TeamMemberModal({ slug, name, position, image, alt, children }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const frontRef = useRef(null);
   const backBtnRef = useRef(null);
   const recemFechado = useRef(false);
+  const shouldReduce = useReducedMotion();
 
   const abrir = () => setIsFlipped(true);
 
@@ -43,7 +20,7 @@ export default function TeamMemberModal({ slug, name, position, image, alt, chil
     recemFechado.current = true;
   };
 
-  // Gerencia o foco para acessibilidade sem precisar prender o scroll da página
+  // Gerencia o foco para acessibilidade
   useEffect(() => {
     if (isFlipped) {
       setTimeout(() => backBtnRef.current?.focus(), 150);
@@ -52,6 +29,30 @@ export default function TeamMemberModal({ slug, name, position, image, alt, chil
       recemFechado.current = false;
     }
   }, [isFlipped]);
+
+  // Aplica o hook useReducedMotion na física da animação
+  const flipperVariants = {
+    frente: {
+      rotateY: 0,
+      y: shouldReduce ? 0 : [0, -40, 0],
+      scale: shouldReduce ? 1 : [1, 1.08, 1],
+      transition: shouldReduce ? { duration: 0 } : {
+        rotateY: { type: "spring", stiffness: 50, damping: 14 },
+        y: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] },
+        scale: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] }
+      }
+    },
+    verso: {
+      rotateY: 180,
+      y: shouldReduce ? 0 : [0, -40, 0],
+      scale: shouldReduce ? 1 : [1, 1.08, 1],
+      transition: shouldReduce ? { duration: 0 } : {
+        rotateY: { type: "spring", stiffness: 50, damping: 14 },
+        y: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] },
+        scale: { duration: 0.6, times: [0, 0.5, 1], ease: ["easeOut", "easeIn"] }
+      }
+    }
+  };
 
   return (
     <LazyMotion features={loadFeatures}>
