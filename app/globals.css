@@ -228,10 +228,9 @@ footer p {
   margin: 0 0 0.5rem;
 }
 
-/* Hero - Modificado para 100vh para esconder o #sobre inicial */
+/* Hero */
 .hero {
   min-height: calc(100vh - 65px);
-  /* Subtrai aprox a altura do header */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -240,7 +239,6 @@ footer p {
   text-align: center;
   background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.06), transparent 65%);
   position: relative;
-  /* Base para o position absolute do scroll indicator */
 }
 
 .hero h1 {
@@ -457,13 +455,71 @@ footer p {
   }
 }
 
-/* Team card */
+/* NOVA ESTRUTURA: Team Card Flip In-Place */
+.team-card-scene {
+  height: 100%;
+  min-height: 440px;
+  /* Garante que o grid gere espaço suficiente para o texto da biografia */
+  perspective: 1200px;
+  cursor: pointer;
+}
+
+.team-card-scene:hover .team-card,
+.team-card-scene:focus-within .team-card,
+.team-card-scene:focus-within .team-card-back {
+  border-color: var(--ac);
+}
+
+.team-card-scene:hover .team-card__name,
+.team-card-scene:focus-within .team-card__name {
+  color: var(--ac);
+}
+
+.team-card-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.team-card-front,
+.team-card-back {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* Anti-alias durante a animação */
+  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+}
+
+/* O Front recebe o hover físico (sobe um pouquinho no mouseover antes do flip) */
+.team-card-front {
+  transition: transform 0.25s ease;
+}
+
+.team-card-front:hover,
+.team-card-front:focus-visible {
+  transform: translateY(-4px);
+}
+
+.team-card-front:focus-visible {
+  outline: 2px solid var(--ac);
+  outline-offset: 4px;
+}
+
+.team-card-front .team-card {
+  height: 100%;
+  margin: 0;
+  transition: border-color 0.25s ease;
+}
+
+/* Estilos de conteúdo do Front (Preservados do original) */
 .team-card {
   border: 1px solid var(--line);
   background: var(--bg2);
   padding: 1rem;
-  height: 100%;
-  transition: border-color 0.25s ease;
 }
 
 .team-card__image {
@@ -488,81 +544,11 @@ footer p {
   margin: 0;
 }
 
-.team-card-wrap {
-  display: block;
-  cursor: pointer;
-  transition: transform 0.25s ease;
-}
-
-.team-card-wrap:hover,
-.team-card-wrap:focus-visible {
-  transform: translateY(-4px);
-}
-
-.team-card-wrap:hover .team-card,
-.team-card-wrap:focus-visible .team-card {
-  border-color: var(--ac);
-}
-
-.team-card-wrap:hover .team-card__name,
-.team-card-wrap:focus-visible .team-card__name {
-  color: var(--ac);
-}
-
-.team-card-wrap:focus-visible {
-  outline: 2px solid var(--ac);
-  outline-offset: 4px;
-}
-
-/* Overlay & Modais */
-.team-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  z-index: 90;
-  backdrop-filter: blur(4px);
-}
-
-.team-modal {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  width: min(380px, 92vw);
-  height: max-content;
-  max-height: 85vh;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-}
-
-.team-modal__flipper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-.team-modal__front,
-.team-modal__inner {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-
-.team-modal__front {
+/* Verso do Card */
+.team-card-back {
   position: absolute;
   inset: 0;
   transform: rotateY(180deg) translateZ(0);
-  pointer-events: none;
-}
-
-.team-modal__front .team-card {
-  height: 100%;
-  margin: 0;
-}
-
-.team-modal__inner {
   background: var(--bg2);
   border: 1px solid var(--line);
   padding: 1.5rem;
@@ -570,17 +556,17 @@ footer p {
   flex-direction: column;
   gap: 1rem;
   overflow-y: auto;
-  max-height: 85vh;
-  min-height: 400px;
+  /* Permite ler textos muito grandes dentro do próprio card */
+  transition: border-color 0.25s ease;
 }
 
-.team-modal__name {
+.team-card-back__name {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-size: clamp(1.6rem, 3vw, 2rem);
   margin: 0;
 }
 
-.team-modal__position {
+.team-card-back__position {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -589,12 +575,14 @@ footer p {
   margin: 0;
 }
 
-.team-modal__bio {
+.team-card-back__bio {
   font-family: var(--font-sans);
   color: var(--fg);
+  font-size: 0.95rem;
+  flex-grow: 1;
 }
 
-.team-modal__close {
+.team-card-back__close {
   align-self: flex-start;
   margin-top: 1rem;
   padding: 0.7rem 1.2rem;
@@ -606,10 +594,10 @@ footer p {
   text-transform: uppercase;
   letter-spacing: 0.15em;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.team-modal__close:hover {
+.team-card-back__close:hover {
   background: var(--ac);
   border-color: var(--ac);
   color: #000;
@@ -635,25 +623,50 @@ footer p {
 }
 
 @media (max-width: 760px) {
-  .team-modal {
-    width: 100vw;
-    max-height: 100vh;
-    height: 100vh;
+  .hero {
+    min-height: auto;
+    padding: 3rem 0 2.5rem;
   }
 
-  .team-modal__inner {
-    padding: 1.5rem;
-    max-height: 100vh;
-    height: 100%;
-    border: none;
+  .scroll-indicator {
+    display: none;
+  }
+
+  html {
+    scroll-padding-top: 120px;
+  }
+
+  header nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header__nav {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .hero__countdown {
+    gap: 0.5rem;
+  }
+
+  .hero__countdown div {
+    min-width: 70px;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  main section {
+    padding: 2rem 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-  .team-overlay,
-  .team-modal,
-  .team-modal__flipper {
+  .team-card-flipper {
     transition: none !important;
     animation: none !important;
   }
@@ -708,49 +721,4 @@ footer p {
   padding: 1rem;
   background: var(--bg2);
   border: 1px solid var(--line);
-}
-
-@media (max-width: 760px) {
-  html {
-    scroll-padding-top: 120px;
-  }
-
-  header nav {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header__nav {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .hero {
-    min-height: auto;
-    /* Remove 100vh no mobile para não ocupar tela demais */
-    padding: 3rem 0 2.5rem;
-  }
-
-  .hero__countdown {
-    gap: 0.5rem;
-  }
-
-  .hero__countdown div {
-    min-width: 70px;
-    padding: 0.75rem 0.5rem;
-  }
-
-  .scroll-indicator {
-    display: none;
-  }
-
-  /* Esconde o indicador no mobile */
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  main section {
-    padding: 2rem 0;
-  }
 }
